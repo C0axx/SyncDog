@@ -1,0 +1,68 @@
+$NEO4J_API = "127.0.0.1";       # modify localhost to your neo4j REST API address
+$NEO4J_PORT = "7474";                #default port
+$NEO4J_USER = "neo4j";              # default username
+$NEO4J_PWD = "neo4j";              # modify to your database password
+
+$QUERY_API = "http://$NEO4J_API $+ :$NEO4J_PORT $+ /db/data/transaction/commit";
+
+import net.dongliu.requests.* from: requests.jar;
+import java.util.ArrayList;
+
+@computersHasOwned = @();
+@usersHasOwned = @();
+
+sub markComputerHasOwned
+{
+    $computer = $1 ;
+    add(@computersHasOwned, $computer);
+
+    elog("[+] Computer: $computer $+  has been pwned!!!");
+    $query = "MATCH (C:Computer) Where C.name =~  '$computer $+ .*' with C match (C) SET C.owned=True return C";
+    %statement = %(statement => $query);
+    $arraylist = [new ArrayList];
+    [$arraylist add: %statement];
+    %statements = %(statements => $arraylist);
+    $resp = [[[[[Requests post: $QUERY_API] jsonBody: %statements] basicAuth: $NEO4J_USER,$NEO4J_PWD]send] readToText];
+}
+
+sub markUserHasOwned
+{
+    $username = $1 ;
+    add(@usersHasOwned, $username);
+
+    elog("[+] User: $username $+  has been pwned!!!");
+    $query = "MATCH (C:User) Where C.name =~  '$username $+ .*' with C match (C) SET C.owned=True return C";
+    %statement = %(statement => $query);
+    $arraylist = [new ArrayList];
+    [$arraylist add: %statement];
+    %statements = %(statements => $arraylist);
+    $resp = [[[[[Requests post: $QUERY_API] jsonBody: %statements] basicAuth: $NEO4J_USER,$NEO4J_PWD]send] readToText];
+}
+
+#Start on script Load
+foreach $session (beacons()) {
+    markComputerHasOwned(uc($session['computer']));
+}
+foreach $cred (credentials()) {
+    if ($cred['source'] != "hashdump"){            # we don't need local sam hash
+        markUserHasOwned(uc($cred['user']));
+    }
+}
+#End
+
+on beacon_initial {
+    $bid = $1;
+    $computer = beacon_info($bid, "computer");
+    if (uc($computer) !in @computersHasOwned){
+        markComputerHasOwned(uc($computer));
+    }
+}
+
+on heartbeat_15s {
+    foreach $cred (credentials()) {
+
+        if (uc($cred['user']) !in @usersHasOwned){
+        markUserHasOwned(uc($cred['user']));
+        }
+    }
+}
