@@ -11,6 +11,16 @@ import java.util.ArrayList;
 @computersHasOwned = @();
 @usersHasOwned = @();
 
+sub neo4jQuery
+{
+    $query = $1;
+    %statement = %(statement => $query);
+    $arraylist = [new ArrayList];
+    [$arraylist add: %statement];
+    %statements = %(statements => $arraylist);
+    $resp = [[[[[Requests post: $QUERY_API] jsonBody: %statements] basicAuth: $NEO4J_USER,$NEO4J_PWD]send] readToText];
+}
+
 sub markComputerHasOwned
 {
     $computer = $1 ;
@@ -18,11 +28,7 @@ sub markComputerHasOwned
 
     elog("[+] Computer: $computer $+  has been pwned!!!");
     $query = "MATCH (C:Computer) Where C.name =~  '$computer $+ .*' with C match (C) SET C.owned=True return C";
-    %statement = %(statement => $query);
-    $arraylist = [new ArrayList];
-    [$arraylist add: %statement];
-    %statements = %(statements => $arraylist);
-    $resp = [[[[[Requests post: $QUERY_API] jsonBody: %statements] basicAuth: $NEO4J_USER,$NEO4J_PWD]send] readToText];
+    neo4jQuery($query);
 }
 
 sub markUserHasOwned
@@ -32,11 +38,7 @@ sub markUserHasOwned
 
     elog("[+] User: $username $+  has been pwned!!!");
     $query = "MATCH (C:User) Where C.name =~  '$username $+ .*' with C match (C) SET C.owned=True return C";
-    %statement = %(statement => $query);
-    $arraylist = [new ArrayList];
-    [$arraylist add: %statement];
-    %statements = %(statements => $arraylist);
-    $resp = [[[[[Requests post: $QUERY_API] jsonBody: %statements] basicAuth: $NEO4J_USER,$NEO4J_PWD]send] readToText];
+    neo4jQuery($query);
 }
 
 #Start on script Load
