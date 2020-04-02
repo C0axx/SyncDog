@@ -7,7 +7,8 @@ Make bloodhound sync with cobaltstrike.
 #### Demo:  
 youtbe: https://www.youtube.com/watch?v=DTE-CDIOpAg&feature=youtu.be  
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/DTE-CDIOpAg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![demo](https://asciinema.org/a/113463.png)](https://www.youtube.com/watch?v=DTE-CDIOpAg&feature=youtu.be  )
+
 
 bilibili: https://www.bilibili.com/video/BV1c64y1u7eT/  
 
