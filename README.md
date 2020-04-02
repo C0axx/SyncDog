@@ -5,7 +5,7 @@ Make bloodhound sync with cobaltstrike.
 2. Load script.  
 
 #### Demo:  
-youtbe: https://www.youtube.com/watch?v=DTE-CDIOpAg&feature=youtu.be  
+youtbe: 
 
 [![demo](https://github.com/Lz1y/SyncDog/blob/master/image.png?raw=true)](https://www.youtube.com/watch?v=DTE-CDIOpAg&feature=youtu.be)
 
