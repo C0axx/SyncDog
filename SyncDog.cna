@@ -41,15 +41,19 @@ sub markUserHasOwned
     neo4jQuery($query);
 }
 
+sub checkCredVault{
+    foreach $cred (credentials()) {
+        if ($cred['source'] != "hashdump"){            # we don't need local sam hash
+            markUserHasOwned(uc($cred['user']));
+        }
+    }
+}
 #Start on script Load
 foreach $session (beacons()) {
     markComputerHasOwned(uc($session['computer']));
 }
-foreach $cred (credentials()) {
-    if ($cred['source'] != "hashdump"){            # we don't need local sam hash
-        markUserHasOwned(uc($cred['user']));
-    }
-}
+
+checkCredVault();
 #End
 
 on beacon_initial {
@@ -61,10 +65,5 @@ on beacon_initial {
 }
 
 on heartbeat_15s {
-    foreach $cred (credentials()) {
-
-        if (uc($cred['user']) !in @usersHasOwned){
-        markUserHasOwned(uc($cred['user']));
-        }
-    }
+    checkCredVault();
 }
