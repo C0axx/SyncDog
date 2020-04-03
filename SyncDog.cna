@@ -21,27 +21,51 @@ sub neo4jQuery
     $resp = [[[[[Requests post: $QUERY_API] jsonBody: %statements] basicAuth: $NEO4J_USER,$NEO4J_PWD]send] readToText];
 }
 
+
+$QUERY_API = "http://$NEO4J_API $+ :$NEO4J_PORT $+ /db/data/transaction/commit";
+
+import net.dongliu.requests.* from: requests.jar;
+import java.util.ArrayList;
+
+@computersHasOwned = @();
+@usersHasOwned = @();
+
+sub neo4jQuery
+{
+    $query = $1;
+    %statement = %(statement => $query);
+    $arraylist = [new ArrayList];
+    [$arraylist add: %statement];
+    %statements = %(statements => $arraylist);
+    $resp = [[[[[Requests post: $QUERY_API] jsonBody: %statements] basicAuth: $NEO4J_USER,$NEO4J_PWD]send] readToText];
+}
+
 sub markComputerHasOwned
 {
     $computer = $1 ;
-    add(@computersHasOwned, $computer);
+    if ($computer !in @computersHasOwned){
+        add(@computersHasOwned, $computer);
 
-    elog("[+] Computer: $computer $+  has been pwned!!!");
-    $query = "MATCH (C:Computer) Where C.name =~  '$computer $+ .*' with C match (C) SET C.owned=True return C";
-    neo4jQuery($query);
+        elog("[+] Computer: $computer $+  has been pwned!!!");
+        $query = "MATCH (C:Computer) Where C.name =~  '$computer $+ .*' with C match (C) SET C.owned=True return C";
+        neo4jQuery($query);
+    }
 }
 
 sub markUserHasOwned
 {
     $username = $1 ;
-    add(@usersHasOwned, $username);
+    if ($username !in @usersHasOwned){
+        add(@usersHasOwned, $username);
 
-    elog("[+] User: $username $+  has been pwned!!!");
-    $query = "MATCH (C:User) Where C.name =~  '$username $+ .*' with C match (C) SET C.owned=True return C";
-    neo4jQuery($query);
+        elog("[+] User: $username $+  has been pwned!!!");
+        $query = "MATCH (C:User) Where C.name =~  '$username $+ .*' with C match (C) SET C.owned=True return C";
+        neo4jQuery($query);
+    }
 }
 
-sub checkCredVault{
+sub checkCredVault
+{
     foreach $cred (credentials()) {
         if ($cred['source'] !eq "hashdump"){            # we don't need local sam hash
             markUserHasOwned(uc($cred['user']));
@@ -49,7 +73,8 @@ sub checkCredVault{
     }
 }
 #Start on script Load
-foreach $session (beacons()) {
+foreach $session (beacons()) 
+{
     markComputerHasOwned(uc($session['computer']));
 }
 
@@ -59,9 +84,7 @@ checkCredVault();
 on beacon_initial {
     $bid = $1;
     $computer = beacon_info($bid, "computer");
-    if (uc($computer) !in @computersHasOwned){
-        markComputerHasOwned(uc($computer));
-    }
+    markComputerHasOwned(uc($computer));
 }
 
 on heartbeat_15s {
