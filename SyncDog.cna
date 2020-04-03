@@ -43,7 +43,7 @@ sub markUserHasOwned
 
 sub checkCredVault{
     foreach $cred (credentials()) {
-        if ($cred['source'] != "hashdump"){            # we don't need local sam hash
+        if ($cred['source'] !eq "hashdump"){            # we don't need local sam hash
             markUserHasOwned(uc($cred['user']));
         }
     }
